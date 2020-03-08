@@ -1,0 +1,40 @@
+trigger: none 
+
+variables:
+  project_name: 'post-artifacts'
+  build_pipeline: 'Publish-Artifacts-JavaScript-AzureFunctions'
+  branch_name: 'refs/heads/develop'
+  build_id: ''
+  artifact_name: 'SampleFunctionApp'
+  azure_subscription: 'post-artifact-connection'
+  function_app_name: 'JavaScriptSampleFunctionApp'
+
+pool:
+  vmImage: 'ubuntu-16.04'
+
+steps:
+
+- task: DownloadBuildArtifacts@0
+  inputs:
+    buildType: 'specific'
+    project: $(project_name)
+    pipeline: $(build_pipeline)
+    # If build Id is not set, get latest build from branch else get specified build id.
+    ${{ if eq(variables['build_id'], '') }}:
+      buildVersionToDownload: 'latestFromBranch'
+    ${{ if ne(variables['build_id'], '') }}:
+      buildVersionToDownload: 'specific'
+      buildId: $(build_id)
+    branchName: $(branch_name)
+    downloadType: 'single'
+    artifactName: $(artifact_name)
+    downloadPath: '$(System.ArtifactsDirectory)'
+
+- task: AzureFunctionApp@1
+  inputs:
+    azureSubscription: $(azure_subscription)
+    appType: 'functionApp'
+    appName: $(function_app_name)
+    package: '$(System.ArtifactsDirectory)/**/*.zip'
+    deploymentMethod: 'auto'
+

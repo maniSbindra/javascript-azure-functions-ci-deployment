@@ -1,0 +1,60 @@
+trigger: none
+
+variables:
+  node_version: 12.14.1
+  function_app_name: 'SampleFunctionApp'
+  code_coverge_threshold: '60'
+
+pool:
+  vmImage: 'ubuntu-16.04'
+
+steps:
+- task: NodeTool@0 
+  inputs:
+    versionSpec: $(node_version)
+
+# Install dev dependencies
+- script: npm install
+  workingDirectory: $(System.DefaultWorkingDirectory)/src/$(function_app_name)
+  displayName: "Install linting, test and coverage dependencies"
+
+# Perform linting using eslint  
+- script: npm run-script lint
+  workingDirectory: $(System.DefaultWorkingDirectory)/src/$(function_app_name)
+  displayName: "Run code linting"
+
+ # Execute unit tests
+- script: npm run-script test-ci
+  workingDirectory: $(System.DefaultWorkingDirectory)/src/$(function_app_name)
+  displayName: "Execute unit tests"
+  continueOnError: true
+
+
+# Publish unit test results  
+- task: PublishTestResults@2
+  inputs:
+    testResultsFormat: 'JUnit'
+    testResultsFiles: '**/junit.xml'
+    mergeTestResults: true
+    testRunTitle: 'Jest Unit Tests'
+    failTaskOnFailedTests: true
+  displayName: 'Publish unit test report'
+
+- script: npm run-script coverage-ci
+  workingDirectory: $(System.DefaultWorkingDirectory)/src/$(function_app_name)
+  displayName: "Calculate Code Coverage"
+
+# Publish code coverage results
+- task: PublishCodeCoverageResults@1
+  inputs:
+    codeCoverageTool: Cobertura
+    summaryFileLocation: $(System.DefaultWorkingDirectory)/src/$(function_app_name)/coverage/cobertura-coverage.xml
+  displayName: "publish code coverage report"
+
+# Fail build if coverage below threshold
+- task: BuildQualityChecks@6
+  inputs:
+    checkCoverage: true
+    coverageFailOption: 'fixed'
+    coverageType: 'lines'
+    coverageThreshold: $(code_coverge_threshold)
