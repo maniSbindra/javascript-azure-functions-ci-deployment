@@ -1,3 +1,3 @@
-# This repository has artifacts supporting the medium post [CI/Deployment for JavaScript Azure Functions using Azure DevOps Pipelines](https://medium.com/microsoftazure/ci-deployment-for-javascript-azure-functions-using-azure-devops-pipelines-7f8bbe106dbb)
+# This repository has artifacts supporting the medium post [CI/Deployment for JavaScript Azure Functions using Azure Pipelines](https://medium.com/microsoftazure/ci-deployment-for-javascript-azure-functions-using-azure-devops-pipelines-7f8bbe106dbb)
 
 ## The post deals with CI and Deployment of Azure Functions written in JavaScript. This inludes quality checks for unit tests (using jest), code coverage and linting.
